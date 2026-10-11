@@ -1,0 +1,54 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import dex from '../data/pokedex.json';
+
+const year = new Date().getFullYear();
+const snapshot = dex.meta.snapshot;
+const count = dex.species.length.toLocaleString('en-US');
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-head">
+          <Logo size={26} />
+          <span class="brand__word" style="color:#f2f4ff">IV<b style="color:#ff5d5d">X</b>ray</span>
+        </div>
+        <p style="font-size:13px; max-width:42ch">
+          A fan-made laboratory for Pokémon individual values and stats - exact IV math for
+          every main-series game from Ruby &amp; Sapphire to Scarlet &amp; Violet.
+        </p>
+        <p style="font-family:var(--mono); font-size:11px">
+          Base stats for {count} species · snapshot {snapshot}<br />
+          Data source: <a href="https://pokeapi.co" rel="noopener">PokéAPI <Icon name="external-link" size={11} /></a> · formulas cross-checked with <a href="https://bulbapedia.bulbagarden.net/wiki/Statistic" rel="noopener">Bulbapedia <Icon name="external-link" size={11} /></a>
+        </p>
+      </div>
+      <div>
+        <h4><Icon name="scan-line" size={13} /> Tools</h4>
+        <ul>
+          <li><a href="/iv-calculator/">IV Calculator</a></li>
+          <li><a href="/stat-calculator/">Stat Calculator</a></li>
+          <li><a href="/iv-judge/">IV Judge Interpreter</a></li>
+          <li><a href="/hidden-power/">Hidden Power Calculator</a></li>
+          <li><a href="/pokedex/">Base Stat Pokédex</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4><Icon name="book-open" size={13} /> Reference</h4>
+        <ul>
+          <li><a href="/about/">About &amp; methodology</a></li>
+          <li><a href="/pokedex/">Base-stat Pokédex</a></li>
+          <li><a href="/changelog/">Changelog</a></li>
+          <li><a href="/sitemap/">Sitemap</a></li>
+          <li><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></li>
+          <li><a href="https://pokeapi.co" rel="noopener">PokéAPI <Icon name="external-link" size={11} /></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {year} IVXray · ivforge.top</span>
+      <span>Not affiliated with Nintendo, Game Freak, or The Pokémon Company. Pokémon © Nintendo / Creatures Inc. / GAME FREAK inc.</span>
+    </div>
+  </div>
+</footer>

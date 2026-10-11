@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { breadcrumbList, CONTACT_EMAIL } from '../lib/seo';
+
+const title = 'Privacy Policy | IVXray';
+const description = 'IVXray privacy policy: all tools run in your browser, nothing you enter is uploaded, logged or stored, and no third-party trackers are loaded.';
+
+const jsonLd = [breadcrumbList([{ name: 'Privacy' }])];
+---
+<BaseLayout title={title} description={description} path="/privacy/" jsonLd={jsonLd}>
+  <div class="container container--narrow">
+    <Breadcrumbs items={[{ name: 'Privacy' }]} />
+    <h1>Privacy Policy</h1>
+    <p class="lede">The short version: everything runs in your browser, and nothing you type is ever sent anywhere.</p>
+
+    <section class="section" style="margin-top:28px">
+      <h2>What IVXray collects</h2>
+      <p>
+        Nothing you enter. Every calculator runs entirely client-side: the species, stats, IVs,
+        EVs and phrases you type are processed in your browser's memory and discarded when you
+        close the tab. There is no account system, no database, and no server-side processing - 
+        the site is a set of static files.
+      </p>
+      <h2>Cookies and tracking</h2>
+      <p>
+        IVXray sets no cookies and loads no third-party analytics, ads or trackers. If anonymous
+        usage analytics are ever added, they will be privacy-friendly, disclosed here first, and
+        gated appropriately for your jurisdiction.
+      </p>
+      <h2>Server logs</h2>
+      <p>
+        The site is served by Cloudflare Pages, whose infrastructure handles requests and may keep
+        standard, short-lived technical logs (IP address, requested URL, timestamp) for security
+        and abuse prevention. IVXray has no access to identify you from those logs. See
+        <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare's privacy policy</a>.
+      </p>
+      <h2>Your choices</h2>
+      <p>
+        Because no personal data is collected, there is nothing to access, export or delete. If
+        you have questions, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      </p>
+      <p class="mono" style="font-size:12px; color:var(--ink-3)">Last updated: 2026-10-11</p>
+    </section>
+  </div>
+</BaseLayout>

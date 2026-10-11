@@ -1,0 +1,26 @@
+---
+import Icon from './Icon.astro';
+import type { Crumb } from '../lib/seo';
+interface Props {
+  items: Crumb[]; // without the leading Home
+}
+const { items } = Astro.props;
+const all: Crumb[] = [{ name: 'Home', path: '/' }, ...items];
+---
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    {all.map((c, i) => (
+      <li>
+        {i < all.length - 1 && c.path ? (
+          c.path === '/' ? (
+            <a href={c.path} aria-label="Home"><Icon name="home" size={12} /></a>
+          ) : (
+            <a href={c.path}>{c.name}</a>
+          )
+        ) : (
+          <span aria-current="page">{c.name}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>

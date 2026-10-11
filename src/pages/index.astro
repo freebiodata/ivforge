@@ -1,0 +1,172 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import dex from '../data/pokedex.json';
+import { organizationGraph } from '../lib/seo';
+
+const title = 'IVXray - Pokémon IV & Stat Tools for Gen 3–9';
+const description =
+  'Free Pokémon IV & stat tools for Gen 3–9: check exact IVs from summary stats, translate judge phrases, project stats at level 100 and solve Hidden Power.';
+
+const faq = [
+  {
+    q: 'How do I know my IVs without the judge function?',
+    a: 'Open the in-game summary screen and note your Pokémon\'s level and six stats, plus its nature (shown on the status page). Enter the species, level, nature and those stat numbers into the <a href="/iv-calculator/">IV Calculator</a> - it runs every IV 0–31 through the exact game formula and shows which values reproduce your stats. At level 50 this is usually exact; at level 100 it always is.',
+  },
+  {
+    q: 'Why does the calculator show multiple possible IVs?',
+    a: 'The game floors (rounds down) every stat calculation, so at low levels several different IVs can produce the exact same stat number. A level-10 Pokémon might show identical stats for IVs 0–9. The calculator shows the full candidate range; re-checking the same Pokémon at a higher level (level 50+) or adding judge phrases narrows it to a single value.',
+  },
+  {
+    q: 'What are IVs (individual values)?',
+    a: 'IVs are hidden genes fixed when a Pokémon is caught, hatched or received - one per stat, each ranging 0–31. They add directly to the stat formula, so a 31-IV ("perfect") stat is the goal for competitive breeding. IVs never change through training (Hyper Training only boosts the effective stat; see below).',
+  },
+  {
+    q: 'What IV spread is "good"?',
+    a: 'For competitive play you typically want the attacking stat, Speed and HP at 31, with the unused attacking stat low - nature and EVs matter just as much. Breeders call a Pokémon "5IV" when the five stats it uses are 31. In-game judges confirm it: "Best" means exactly 31, "Fantastic" means 30.',
+  },
+  {
+    q: 'Does Hyper Training change IVs?',
+    a: 'No. Hyper Training (Gen 7+) raises a level-100 Pokémon\'s <em>effective</em> stat to behave like 31, but the underlying IV is unchanged - it is still passed down as-is when breeding, and it still determines Hidden Power\'s type. Bottle caps are a battle-ready patch, not a genetic fix.',
+  },
+  {
+    q: 'Which games does IVXray support?',
+    a: 'Every main-series game from Ruby &amp; Sapphire (2002) through Scarlet &amp; Violet - the stat and IV formulas are identical across Gen 3–9. Gen 1–2 games use a different system (DVs, 0–15) and are not supported. Hidden Power calculators apply to Gen 3–7 only, since the move was cut from Gen 8 onward.',
+  },
+  {
+    q: 'Is IVXray free? Where does the data come from?',
+    a: 'Completely free, no account, and every calculation runs locally in your browser - nothing you type is sent anywhere. Base stats for all 1,025 species are baked in from <a href="https://pokeapi.co" rel="noopener">PokéAPI</a> (snapshot ' + dex.meta.snapshot + '), and formulas are cross-checked against Bulbapedia. IVXray is a fan tool and is not affiliated with Nintendo, Game Freak or The Pokémon Company.',
+  },
+];
+
+const jsonLd = [organizationGraph()];
+---
+<BaseLayout title={title} description={description} path="/" jsonLd={jsonLd}>
+  <!-- ================= HERO ================= -->
+  <section class="container hero">
+    <div>
+      <p class="eyebrow">Pokémon IV &amp; stat laboratory</p>
+      <h1>See straight through your Pokémon's <span class="x">stats</span>.</h1>
+      <p class="lede">
+        IVXray reads the hidden numbers behind every Pokémon: exact IV checking from summary-screen
+        stats, stat projection at any level, judge-phrase translation and Hidden Power solving - 
+        for every main-series game from Gen 3 to Gen 9.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn--primary" href="/iv-calculator/"><Icon name="scan-line" size={15} /> IV Calculator</a>
+        <a class="btn btn--blue" href="/stat-calculator/"><Icon name="gauge" size={15} /> Stat Calculator</a>
+        <a class="btn btn--ghost" href="/iv-judge/"><Icon name="badge-check" size={15} /> IV Judge Interpreter</a>
+      </div>
+      <div class="hero-meta">
+        <span><Icon name="database" size={13} /> {dex.species.length.toLocaleString('en-US')} species baked in</span>
+        <span><Icon name="zap" size={13} /> Gen 3–9 exact math</span>
+        <span><Icon name="lock" size={13} /> runs 100% in your browser</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="readout hero-card">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="readout-head">
+          <p class="readout-title">SPECIMEN <b>GARCHOMP #445</b> · LV 50</p>
+          <span class="status-chip status-chip--ok">exact match</span>
+        </div>
+        <div class="stat-rows">
+          <div class="stat-row"><span class="stat-row__label">HP</span><span class="stat-row__value stat-row__value--exact">31</span><span class="iv-bar"><i class="single"></i></span></div>
+          <div class="stat-row"><span class="stat-row__label">ATK</span><span class="stat-row__value stat-row__value--exact">31</span><span class="iv-bar"><i class="single"></i></span></div>
+          <div class="stat-row"><span class="stat-row__label">DEF</span><span class="stat-row__value stat-row__value--exact">31</span><span class="iv-bar"><i class="single"></i></span></div>
+          <div class="stat-row"><span class="stat-row__label">SPA</span><span class="stat-row__value stat-row__value--range">30–31</span><span class="iv-bar"><i class="hit"></i><i class="hit"></i></span></div>
+          <div class="stat-row"><span class="stat-row__label">SPD</span><span class="stat-row__value stat-row__value--exact">31</span><span class="iv-bar"><i class="single"></i></span></div>
+          <div class="stat-row"><span class="stat-row__label">SPE</span><span class="stat-row__value stat-row__value--exact">31</span><span class="iv-bar"><i class="single"></i></span></div>
+        </div>
+        <div class="readout-foot"><span>IV scan complete - 6 of 6 stats resolved</span><b>ivforge.top</b></div>
+      </div>
+      <div class="hero-scanline" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- ================= TOOLS ================= -->
+  <section class="container section" aria-labelledby="tools-h">
+    <p class="eyebrow">Instruments</p>
+    <h2 id="tools-h">Four precision tools</h2>
+    <div class="tools-grid">
+      <a class="card tool-card" href="/iv-calculator/">
+        <span class="tool-no"><span class="icon-box"><Icon name="scan-line" size={19} /></span>TOOL 01 · IV CHECKER</span>
+        <h3>IV Calculator</h3>
+        <p>Enter what the summary screen shows - species, level, nature, stats - and get exact IVs or tight ranges, with characteristic and judge hints to finish the job.</p>
+        <span class="go">Open scanner <Icon name="arrow-right" size={13} /></span>
+      </a>
+      <a class="card tool-card" href="/stat-calculator/">
+        <span class="tool-no"><span class="icon-box icon-box--blue"><Icon name="gauge" size={19} /></span>TOOL 02 · STAT PROJECTION</span>
+        <h3>Stat Calculator</h3>
+        <p>Base stats + IVs + EVs + nature + level → all six final stats, plus the same spread projected at level 100 so you know what you're raising.</p>
+        <span class="go">Project stats <Icon name="arrow-right" size={13} /></span>
+      </a>
+      <a class="card tool-card" href="/iv-judge/">
+        <span class="tool-no"><span class="icon-box"><Icon name="badge-check" size={19} /></span>TOOL 03 · JUDGE PHRASES</span>
+        <h3>IV Judge Interpreter</h3>
+        <p>Translate "Best", "Fantastic", "Pretty Good" and friends into hard IV ranges - for the Gen 7+ judge function, Gen 6 NPC judges and everything back to Emerald.</p>
+        <span class="go">Decode phrases <Icon name="arrow-right" size={13} /></span>
+      </a>
+      <a class="card tool-card" href="/hidden-power/">
+        <span class="tool-no"><span class="icon-box icon-box--blue"><Icon name="sparkles" size={19} /></span>TOOL 04 · TYPE SOLVER</span>
+        <h3>Hidden Power Calculator</h3>
+        <p>Work out Hidden Power's type and base power from IVs (Gen 3–7) - and reverse it into breeding-ready 31/30 spreads for any target type.</p>
+        <span class="go">Solve type <Icon name="arrow-right" size={13} /></span>
+      </a>
+    </div>
+    <p style="margin-top:16px; font-size:13.5px; color:var(--ink-2)">
+      Also on the bench: a searchable <a href="/pokedex/">base-stat Pokédex</a> for all 1,025 species.
+    </p>
+  </section>
+
+  <!-- ================= WHY ================= -->
+  <section class="container section" aria-labelledby="why-h">
+    <p class="eyebrow eyebrow--blue">Why IVXray</p>
+    <h2 id="why-h">Built like an instrument, not a form</h2>
+    <div class="steps">
+      <div class="card step">
+        <h3><Icon name="lock" size={16} /> Private by construction</h3>
+        <p>No accounts, no uploads, no server round-trips - the whole Pokédex is baked into the page and every solve happens in your browser.</p>
+      </div>
+      <div class="card step">
+        <h3><Icon name="flask-conical" size={16} /> Exact, sourced math</h3>
+        <p>The Gen 3–9 stat formula, 25-nature table, judge tiers and Hidden Power bit math are implemented literally and unit-tested against documented worked examples.</p>
+      </div>
+      <div class="card step">
+        <h3><Icon name="sparkles" size={16} class="icon--blue" /> Solves the awkward cases</h3>
+        <p>Ambiguous ranges explained, characteristic tie-breaks respected, Shedinja's HP handled, and reverse Hidden Power breeding targets computed for you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= METHOD ================= -->
+  <section class="container section" aria-labelledby="method-h">
+    <p class="eyebrow">Method</p>
+    <h2 id="method-h">A thirty-second IV scan</h2>
+    <div class="steps">
+      <div class="card step">
+        <h3><Icon name="search" size={16} /> Read the specimen</h3>
+        <p>Open the summary screen. Note the level, the nature, and the six stat numbers. If the judge function is unlocked, its phrases help; if a characteristic is visible ("Likes to run…"), grab it too.</p>
+      </div>
+      <div class="card step">
+        <h3><Icon name="zap" size={16} /> Feed the instrument</h3>
+        <p>Enter species, level, nature and stats into the IV Calculator. Add EVs if the Pokémon is trained, judge tiers and the characteristic if you have them.</p>
+      </div>
+      <div class="card step">
+        <h3><Icon name="scan-line" size={16} /> Read the scan</h3>
+        <p>Each stat shows its exact IV or candidate range on a 0–31 ruler, plus how many spreads remain. Higher levels and judge data collapse ranges to a single number.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="container section container--narrow" aria-labelledby="faq-h">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-h">IV checking, answered</h2>
+    <Faq items={faq} />
+    <p style="margin-top:18px; font-size:13px; color:var(--ink-3)">
+      More answers on the <a href="/about/">about page</a> - methodology, data sources and the full disclaimer.
+    </p>
+  </section>
+</BaseLayout>

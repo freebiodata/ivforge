@@ -1,0 +1,122 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Faq from '../components/Faq.astro';
+import dex from '../data/pokedex.json';
+import { breadcrumbList, CONTACT_EMAIL, LAST_UPDATED } from '../lib/seo';
+
+const title = 'About IVXray - Method, Data & Sources | IVXray';
+const description =
+  'How IVXray works: the exact Gen 3–9 stat formulas, IV solving by exhaustive search, data baked from PokéAPI, testing methodology, privacy stance and the fan-project disclaimer.';
+
+const faq = [
+  {
+    q: 'Is IVXray affiliated with Nintendo or The Pokémon Company?',
+    a: 'No. IVXray is an independent fan project and is not affiliated with, endorsed or sponsored by Nintendo, Game Freak, The Pokémon Company or any of their affiliates. Pokémon and all related names are trademarks of Nintendo / Creatures Inc. / GAME FREAK inc.',
+  },
+  {
+    q: 'Why do other IV calculators disagree at low levels?',
+    a: 'They usually don\'t - they show the same math differently. The game floors every intermediate step, so several IVs can produce one stat number. If a tool shows a single IV at level 10, it is guessing; IVXray always shows the true candidate range.',
+  },
+  {
+    q: 'How current is the species data?',
+    a: `Base stats for all ${dex.species.length.toLocaleString('en-US')} base-form species were baked from PokéAPI on ${dex.meta.snapshot} and ship inside the site. Regenerate any time with <code>npm run fetch:pokedex</code>.`,
+  },
+  {
+    q: 'Can I use IVXray offline?',
+    a: 'Almost. Once a page has loaded, all math is local - but each tool page fetches the baked Pokédex JSON from the same server, so you need a connection for the first load of each page.',
+  },
+  {
+    q: 'How do I report a wrong result?',
+    a: `Email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> with the species, level, nature and stats you entered and what you expected. Every formula is also shown on its tool page so you can verify by hand.`,
+  },
+];
+
+const jsonLd = [breadcrumbList([{ name: 'About' }])];
+---
+<BaseLayout title={title} description={description} path="/about/" jsonLd={jsonLd}>
+  <div class="container container--narrow">
+    <Breadcrumbs items={[{ name: 'About' }]} />
+    <p class="eyebrow">The lab</p>
+    <h1>About IVXray</h1>
+    <p class="lede">
+      IVXray is a free, single-purpose lab bench for Pokémon IVs and stats. It exists because
+      IV checking is genuinely mathematical - and the tools that respect the math deserve a
+      clean, fast, private home.
+    </p>
+
+    <section class="section" id="method" style="margin-top: 36px">
+      <h2 class="h-ico"><Icon name="flask-conical" size={17} /> Methodology</h2>
+      <p>
+        Every calculation runs the exact formulas the games use - no approximations:
+      </p>
+      <pre class="formula">HP    = floor((2·Base + IV + floor(EV/4)) · Level/100) + Level + 10
+Other = floor((floor((2·Base + IV + floor(EV/4)) · Level/100) + 5) · N)
+N = 1.1 (nature boost) · 0.9 (nature drop) · 1 (neutral)</pre>
+      <ul>
+        <li><b>IV solving</b> is exhaustive: each IV 0–31 is substituted into the formula and kept if it reproduces your observed stat. That's why results are ranges when rounding hides differences.</li>
+        <li><b>Characteristics</b> are applied as hard constraints (stat tied for highest, IV ≡ k mod 5), with the encryption-constant tie-break treated soundly.</li>
+        <li><b>Hidden Power</b> uses the Gen 3–7 bit formulas; breeding targets are computed by full enumeration of the 64 parity patterns.</li>
+        <li><b>Nature table</b> is the canonical 25-nature set (5 neutral, 20 with +10%/−10%).</li>
+      </ul>
+      <p>
+        The math library is unit-tested against documented worked examples (including
+        Bulbapedia's Hidden Power examples and well-known competitive stat values like a
+        base-100/31/0 neutral stat being 236 at level 100) - 59 assertions at build time.
+      </p>
+    </section>
+
+    <section class="section" id="data">
+      <h2 class="h-ico"><Icon name="database" size={17} /> Data &amp; sources</h2>
+      <dl class="kv">
+        <dt>Base stats</dt>
+        <dd><a href="https://pokeapi.co" rel="noopener">PokéAPI</a> - open API, no key. Snapshot <b>{dex.meta.snapshot}</b>, {dex.species.length.toLocaleString('en-US')} base-form species (National Dex #1–#{dex.species[dex.species.length - 1].id}). Fetched by <code>scripts/fetch-pokedex.mjs</code> and baked into the site.</dd>
+        <dt>Formulas</dt>
+        <dd><a href="https://bulbapedia.bulbagarden.net/wiki/Statistic" rel="noopener">Bulbapedia - Statistics</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/Stats_judge" rel="noopener">Stats judge</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/Characteristic" rel="noopener">Characteristic</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/Hidden_Power_(move)/Calculation" rel="noopener">Hidden Power calculation</a> (all verified 2026-10-11).</dd>
+        <dt>Last updated</dt>
+        <dd><time datetime={LAST_UPDATED}>{LAST_UPDATED}</time> - see the <a href="/changelog/">changelog</a>.</dd>
+        <dt>Contact</dt>
+        <dd><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></dd>
+      </dl>
+      <p>
+        Formulas and phrase tables are deterministic game data and are re-verified against the
+        sources above on every release. If a source changes, the change log records it.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 class="h-ico"><Icon name="info" size={17} /> How this site is made</h2>
+      <ul>
+        <li>A static site built with <a href="https://astro.build" rel="noopener">Astro</a>, served from Cloudflare Pages - no server-side processing at all.</li>
+        <li>All tools run client-side in your browser. Nothing you enter is transmitted, logged or stored; there are no accounts, ads or third-party trackers.</li>
+        <li>Code and content are developed with AI assistance and reviewed by the maintainers; formulas and data are verified against the cited sources above.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 class="h-ico"><Icon name="triangle-alert" size={17} /> Limitations</h2>
+      <ul>
+        <li>Gen 1–2 (DVs, 0–15) are not supported - different system entirely.</li>
+        <li>Hyper Training is invisible to IV math: hyper-trained stats read as their trained value in-game while the true IV stays hidden.</li>
+        <li>EV solving isn't offered: with unknown EVs, IVs are mathematically unrecoverable from stats alone.</li>
+        <li>Alternate forms (Mega, regional variants beyond base forms) use base-form stats.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="faq">
+      <h2 class="h-ico"><Icon name="circle-help" size={17} /> FAQ</h2>
+      <Faq items={faq} />
+    </section>
+
+    <section class="section">
+      <h2 class="h-ico"><Icon name="shield-check" size={17} /> Disclaimer</h2>
+      <div class="note note--bad">
+        IVXray is a fan-made tool and is <b>not affiliated with Nintendo, Game Freak, or
+        The Pokémon Company</b>. Pokémon and Pokémon character names are trademarks of
+        Nintendo / Creatures Inc. / GAME FREAK inc. No game assets are hosted here - only
+        factual stat data and formulas.
+      </div>
+    </section>
+  </div>
+</BaseLayout>

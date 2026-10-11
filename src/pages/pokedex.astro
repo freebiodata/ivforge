@@ -1,0 +1,84 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolHead from '../components/ToolHead.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import dex from '../data/pokedex.json';
+import { breadcrumbList } from '../lib/seo';
+
+const title = 'Pokémon Base Stats List - All 1,025 Species | IVXray';
+const description =
+  'Searchable base stats for every Pokémon - HP, Attack, Defense, Sp. Atk, Sp. Def, Speed and totals, filterable by generation and sortable per stat. Data from PokéAPI.';
+
+const jsonLd = [breadcrumbList([{ name: 'Pokédex' }])];
+---
+<BaseLayout title={title} description={description} path="/pokedex/" jsonLd={jsonLd}>
+  <ToolHead
+    no="Reference · Base stats"
+    title="Pokémon Base Stat Pokédex"
+    icon="book-open"
+    lede="All 1,025 species with their base stats - search by name or dex number, filter by generation, and sort by any stat to find the fastest, toughest or hardest-hitting Pokémon."
+    crumbs={[{ name: 'Pokédex' }]}
+    trust="1,025 species · PokéAPI snapshot 2026-10-11 · sortable"
+  />
+
+  <section class="container section" style="margin-top: 24px" id="dexbrowser">
+    <div class="card card--pad" style="margin-bottom: 16px">
+      <div class="field-grid" style="grid-template-columns: 2fr 1fr; align-items:end">
+        <div class="field" style="margin:0">
+          <label for="dex-q">Search species</label>
+          <input id="dex-q" class="input" type="search" placeholder="e.g. Garchomp, Dragapult, #445" autocomplete="off" />
+        </div>
+        <div class="field" style="margin:0">
+          <label for="dex-gen">Generation</label>
+          <select id="dex-gen" class="select"></select>
+        </div>
+      </div>
+      <p class="sub" id="dex-status" style="margin:8px 0 0">Loading 1,025 species…</p>
+    </div>
+
+    <p class="mono" id="dex-count" style="font-size:12px; color:var(--ink-3); margin: 0 0 8px"></p>
+    <div class="table-wrap">
+      <table class="data" id="dex-table">
+        <thead>
+          <tr>
+            <th data-sort="id" class="sortable">#</th>
+            <th>Species</th>
+            <th>Type</th>
+            <th data-sort="hp" class="sortable">HP</th>
+            <th data-sort="atk" class="sortable">ATK</th>
+            <th data-sort="def" class="sortable">DEF</th>
+            <th data-sort="spa" class="sortable">SPA</th>
+            <th data-sort="spd" class="sortable">SPD</th>
+            <th data-sort="spe" class="sortable">SPE</th>
+            <th data-sort="total" class="sortable">TOTAL</th>
+          </tr>
+        </thead>
+        <tbody id="dex-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px; text-align:center">
+      <button type="button" class="btn btn--ghost btn--sm" id="dex-more" hidden>Show 100 more</button>
+    </div>
+
+    <div class="note" style="margin-top:18px">
+      Base stats are the species' genetic constants used in the
+      <a href="/stat-calculator/">stat formula</a> - they never change. A row's best stat is
+      highlighted in red. Click any column header to sort by it.
+    </div>
+
+    <section class="section" style="margin-top:40px">
+      <TrustBlock />
+      <div class="nextsteps">
+        <span>Next step</span>
+        <a class="chip chip--on" href="/stat-calculator/">Compute final stats <Icon name="arrow-right" size={12} /></a>
+        <a class="chip" href="/iv-calculator/">Check a specimen's IVs <Icon name="arrow-right" size={12} /></a>
+      </div>
+    </section>
+  </section>
+
+  <script>
+    import { initDexBrowser } from '../lib/client/dex-browser';
+    initDexBrowser(document.getElementById('dexbrowser')!);
+  </script>
+</BaseLayout>

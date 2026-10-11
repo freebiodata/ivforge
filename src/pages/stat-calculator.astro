@@ -1,0 +1,187 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolHead from '../components/ToolHead.astro';
+import SpeciesField from '../components/SpeciesField.astro';
+import Faq from '../components/Faq.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { STAT_KEYS, STAT_LABELS } from '../lib/core/types';
+import { breadcrumbList, webApplication } from '../lib/seo';
+
+const title = 'Pokémon Stat Calculator - Stats at Any Level | IVXray';
+const description =
+  'Compute final Pokémon stats from base stats, IVs, EVs, nature and level, with a level-100 projection and a live EV budget gauge - all 1,025 species, Gen 3–9 math.';
+
+const faq = [
+  {
+    q: 'How is a Pokémon\'s final stat calculated?',
+    a: 'Every stat folds five inputs together: base stat (species), IV (0–31), EVs (0–252 each, divided by 4 in the formula), level, and the nature\'s ±10%. The exact formula is shown below the tool - IVXray runs it directly, including all rounding.',
+  },
+  {
+    q: 'What EV spread should I use?',
+    a: 'The classic skeleton is 252 in the main attacking stat, 252 in HP or Speed, and the last 4 anywhere (510 total is the cap). Competitive sets usually run 252/252/4 - the "Max EVs" button fills that skeleton for you.',
+  },
+  {
+    q: 'Why do 4 EVs sometimes add nothing?',
+    a: 'EVs count in groups of four - floor(EV/4) - so at level 100 the leftover 4 points still add +1 (4/4 = 1). At lower levels even 8 EVs can round away to nothing. That\'s the game rounding, not a bug.',
+  },
+  {
+    q: 'What does nature do to stats?',
+    a: 'One nature raises a stat by 10% and lowers another by 10% (five natures do nothing). HP is never affected. The chips under the nature selector show exactly which stats move for your selection.',
+  },
+  {
+    q: 'What will my Pokémon become at level 100?',
+    a: 'The second panel recomputes your exact IV/EV/nature spread at level 100 - the numbers a fully-trained competitive build reaches. IVs never change as a Pokémon levels; only EVs and level do.',
+  },
+];
+
+const jsonLd = [
+  webApplication({
+    name: 'IVXray - Pokémon Stat Calculator',
+    path: '/stat-calculator/',
+    description,
+  }),
+  breadcrumbList([{ name: 'Stat Calculator' }]),
+];
+---
+<BaseLayout title={title} description={description} path="/stat-calculator/" jsonLd={jsonLd}>
+  <ToolHead
+    no="Tool 02 · Stat projection"
+    icon="gauge"
+    title="Pokémon Stat Calculator"
+    lede="Feed it a species, IVs, EVs, nature and level - get all six final stats computed with the exact Gen 3–9 formula, plus the same spread projected at level 100."
+    crumbs={[{ name: 'Stat Calculator' }]}
+    trust="Free · No sign-up · Nothing you enter leaves your browser"
+  />
+
+  <section class="container section" style="margin-top: 24px" id="statcalc">
+    <div class="tool-grid">
+      <!-- ============ INPUTS ============ -->
+      <div class="card card--pad">
+        <div class="card-title">
+          <h3>Build</h3>
+          <span class="hint">defaults: 31 IVs · 0 EVs</span>
+        </div>
+
+        <SpeciesField id="stat-species" />
+
+        <div class="field-grid" style="grid-template-columns: 1fr 1.4fr; align-items: start">
+          <div class="field" style="margin:0">
+            <label for="stat-level">Level</label>
+            <input id="stat-level" class="input input--num" type="number" min="1" max="100" value="50" inputmode="numeric" />
+            <div class="chips" style="margin-top:8px">
+              <button type="button" class="chip stat-lvl-chip" data-level="5">Lv 5</button>
+              <button type="button" class="chip stat-lvl-chip" data-level="50">Lv 50</button>
+              <button type="button" class="chip stat-lvl-chip" data-level="100">Lv 100</button>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label for="stat-nature">Nature</label>
+            <select id="stat-nature" class="select"></select>
+            <div class="chips" id="stat-naturefx" style="margin-top:8px"></div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="field-grid" style="grid-template-columns: repeat(auto-fit, minmax(148px, 1fr))">
+          {STAT_KEYS.map((k) => (
+            <div class="field" style="margin:0">
+              <label for={`stat-iv-${k}`}>{STAT_LABELS[k]} - IV / EV</label>
+              <div style="display:flex; gap:8px">
+                <input id={`stat-iv-${k}`} class="input input--num" type="number" min="0" max="31" value="31" inputmode="numeric" aria-label={`${STAT_LABELS[k]} IV`} />
+                <input id={`stat-ev-${k}`} class="input input--num" type="number" min="0" max="252" step="4" value="0" inputmode="numeric" aria-label={`${STAT_LABELS[k]} EV`} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style="margin:16px 0 8px">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+            <span style="font-size:12px; font-weight:600; color:var(--ink-2)">EV budget</span>
+            <span class="mono" id="stat-ev-total" style="font-size:12px; color:var(--ink-2)">0 / 510 EVs</span>
+          </div>
+          <div class="gauge"><div class="gauge-fill" id="stat-gauge-fill" style="width:0%"></div></div>
+          <div class="note note--warn" id="stat-evwarn" hidden style="margin-top:8px"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <button type="button" class="btn btn--primary btn--sm" id="stat-example"><Icon name="play" size={13} /> Load example</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="stat-maxev"><Icon name="zap" size={13} /> Max EVs 252/252/4</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="stat-clearev"><Icon name="x" size={13} /> Clear EVs</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="stat-reset"><Icon name="rotate-ccw" size={13} /> Reset</button>
+          <button type="button" class="btn btn--blue btn--sm" id="stat-copy"><Icon name="copy" size={13} /> Copy stats</button>
+        </div>
+      </div>
+
+      <!-- ============ READOUTS ============ -->
+      <aside class="tool-side">
+        <div class="readout" id="stat-readout" aria-live="polite">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="readout-head">
+            <p class="readout-title">FINAL STATS <b>// CURRENT LEVEL</b></p>
+            <span class="status-chip status-chip--wait" id="stat-status"><Icon name="gauge" size={12} /> standby</span>
+          </div>
+          <div class="stat-rows" id="stat-rows"></div>
+          <div class="readout-foot" id="stat-foot"></div>
+        </div>
+
+        <div class="readout" style="margin-top:16px" aria-live="polite">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="readout-head">
+            <p class="readout-title">PROJECTION <b>// LEVEL 100</b></p>
+            <span class="status-chip"><Icon name="arrow-right" size={12} /> what it becomes</span>
+          </div>
+          <div class="stat-rows" id="stat-100-rows"></div>
+          <div class="readout-foot" id="stat-100-foot"></div>
+        </div>
+
+        <div class="nextsteps">
+          <span>Next step</span>
+          <a class="chip chip--on" href="/iv-calculator/">Check its IVs <Icon name="arrow-right" size={12} /></a>
+          <a class="chip" href="/pokedex/">Compare base stats <Icon name="arrow-right" size={12} /></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ MATH ============ -->
+  <section class="container section container--narrow" aria-labelledby="math-h">
+    <p class="eyebrow eyebrow--blue">Reference</p>
+    <h2 id="math-h">The stat formula, exactly</h2>
+    <pre class="formula">HP    = floor((2·Base + IV + floor(EV/4)) · Level/100) + Level + 10
+Other = floor((floor((2·Base + IV + floor(EV/4)) · Level/100) + 5) · N)
+N = 1.1 · nature boost | 0.9 · nature drop | 1 · neutral (HP always 1)</pre>
+    <p>
+      Sanity checks every competitive player knows: a base-100 stat with 31 IVs, no EVs and a
+      neutral nature is <b>236</b> at level 100 and <b>120</b> at level 50; with 252 EVs and a
+      boosting nature it reaches <b>328</b>. IVXray applies the floors in the same order the
+      games do, so projections match in-game stat screens exactly.
+    </p>
+    <p>
+      <b>Limitations:</b> applies to Gen 3–9 only (Gen 1–2 used a different formula and a
+      separate Special stat); EV totals are capped at 510 with 252 per stat - the gauge turns
+      red when a plan exceeds the cap. Source:
+      <a href="https://bulbapedia.bulbagarden.net/wiki/Statistic" rel="noopener">Bulbapedia - Statistics</a>
+      (formula verified 2026-10-11).
+    </p>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="container section container--narrow" aria-labelledby="faq-h">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-h">Stat Calculator FAQ</h2>
+    <Faq items={faq} />
+    <TrustBlock />
+    <div class="inline-list" style="margin-top:20px">
+      <a href="/iv-calculator/">IV Calculator <Icon name="arrow-right" size={12} /></a>
+      <a href="/iv-judge/">IV Judge Interpreter <Icon name="arrow-right" size={12} /></a>
+      <a href="/pokedex/">Base-stat Pokédex <Icon name="arrow-right" size={12} /></a>
+    </div>
+  </section>
+
+  <script>
+    import { initStatCalculator } from '../lib/client/stat-calculator';
+    initStatCalculator(document.getElementById('statcalc')!);
+  </script>
+</BaseLayout>

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { breadcrumbList, CONTACT_EMAIL } from '../lib/seo';
+
+const title = 'Terms of Use | IVXray';
+const description = 'Terms for using IVXray: provided as-is and free of charge, fan-made, with no warranty; Pokémon is a trademark of Nintendo / Creatures Inc. / GAME FREAK inc.';
+
+const jsonLd = [breadcrumbList([{ name: 'Terms' }])];
+---
+<BaseLayout title={title} description={description} path="/terms/" jsonLd={jsonLd}>
+  <div class="container container--narrow">
+    <Breadcrumbs items={[{ name: 'Terms' }]} />
+    <h1>Terms of Use</h1>
+    <p class="lede">IVXray is a free fan tool provided as-is, with no warranty of any kind.</p>
+
+    <section class="section" style="margin-top:28px">
+      <h2>Use of the service</h2>
+      <p>
+        IVXray is provided free of charge, without an account, and may be used by anyone. Don't
+        attempt to disrupt, overload or abuse the service. The tools perform all computation in
+        your browser; you are responsible for the data you type into it.
+      </p>
+      <h2>No warranty</h2>
+      <p>
+        Calculations are provided "as is" for informational purposes. While formulas are
+        unit-tested against documented game mechanics, no guarantee is made that results match
+        every in-game situation. Always double-check important decisions (competitive team
+        building, breeding) in-game.
+      </p>
+      <h2>Trademarks</h2>
+      <p>
+        IVXray is a fan project and is <b>not affiliated with Nintendo, Game Freak, or The
+        Pokémon Company</b>. Pokémon and Pokémon character names are trademarks of Nintendo /
+        Creatures Inc. / GAME FREAK inc. Base-stat data is derived from
+        <a href="https://pokeapi.co" rel="noopener">PokéAPI</a> with attribution.
+      </p>
+      <h2>Changes</h2>
+      <p>
+        These terms may be updated as the site evolves; material changes will be noted in the
+        <a href="/changelog/">changelog</a>. Questions: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      </p>
+      <p class="mono" style="font-size:12px; color:var(--ink-3)">Last updated: 2026-10-11</p>
+    </section>
+  </div>
+</BaseLayout>

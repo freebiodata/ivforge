@@ -1,0 +1,25 @@
+---
+import Breadcrumbs from './Breadcrumbs.astro';
+import Icon from './Icon.astro';
+import type { Crumb } from '../lib/seo';
+import type { IconName } from '../lib/icons';
+
+interface Props {
+  no: string;
+  title: string;
+  lede: string;
+  crumbs?: Crumb[];
+  /** honest qualifiers shown under the H1 */
+  trust?: string;
+  icon?: IconName;
+}
+
+const { no, title, lede, crumbs = [], trust = 'Free · No sign-up · Runs in your browser', icon } = Astro.props;
+---
+<div class="container toolhead">
+  {crumbs.length > 0 && <Breadcrumbs items={crumbs} />}
+  <p class="eyebrow">{icon && <Icon name={icon} size={14} />}{no}</p>
+  <h1>{title}</h1>
+  <p class="lede">{lede}</p>
+  <p class="trustline"><Icon name="lock" size={13} />{trust}</p>
+</div>

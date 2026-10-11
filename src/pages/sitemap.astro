@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { breadcrumbList } from '../lib/seo';
+
+const title = 'Sitemap - All Pages | IVXray';
+const description = 'Every page on IVXray: the four Pokémon IV and stat tools, the base-stat Pokédex, and the reference and legal pages.';
+
+const groups = [
+  {
+    heading: 'Tools',
+    links: [
+      { href: '/iv-calculator/', label: 'Pokémon IV Calculator', desc: 'Exact IVs and ranges from summary-screen stats (Gen 3–9).' },
+      { href: '/stat-calculator/', label: 'Pokémon Stat Calculator', desc: 'Final stats from base/IV/EV/nature/level + Lv 100 projection.' },
+      { href: '/iv-judge/', label: 'IV Judge Interpreter', desc: 'Judge phrases and characteristics decoded into IV ranges.' },
+      { href: '/hidden-power/', label: 'Hidden Power Calculator', desc: 'Type & power from IVs, plus breeding-target spreads (Gen 3–7).' },
+    ],
+  },
+  {
+    heading: 'Reference',
+    links: [
+      { href: '/pokedex/', label: 'Base Stat Pokédex', desc: 'All 1,025 species, searchable and sortable.' },
+      { href: '/about/', label: 'About, Methodology & Data', desc: 'How the math works, sources, limitations, contact.' },
+    ],
+  },
+  {
+    heading: 'This site',
+    links: [
+      { href: '/changelog/', label: 'Changelog', desc: 'Dated updates to the tools and data.' },
+      { href: '/privacy/', label: 'Privacy Policy', desc: 'Everything runs in your browser; nothing is collected.' },
+      { href: '/terms/', label: 'Terms of Use', desc: 'As-is fan tool; trademark disclaimer.' },
+    ],
+  },
+];
+
+const jsonLd = [breadcrumbList([{ name: 'Sitemap' }])];
+---
+<BaseLayout title={title} description={description} path="/sitemap/" jsonLd={jsonLd}>
+  <div class="container container--narrow">
+    <Breadcrumbs items={[{ name: 'Sitemap' }]} />
+    <h1>Sitemap</h1>
+    <p class="lede">Every page on IVXray, in one scan.</p>
+    {groups.map((g) => (
+      <section class="section" style="margin-top:28px">
+        <h2>{g.heading}</h2>
+        <ul style="list-style:none; margin:0; padding:0; display:grid; gap:10px">
+          {g.links.map((l) => (
+            <li class="card card--pad" style="padding:14px 18px">
+              <a href={l.href} style="font-weight:700">{l.label}</a>
+              <span style="color:var(--ink-2)"> - {l.desc}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

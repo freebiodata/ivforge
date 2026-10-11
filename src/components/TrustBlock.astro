@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro';
+import { CONTACT_EMAIL, LAST_UPDATED, SITE_NAME } from '../lib/seo';
+---
+<div class="trustblock">
+  <div>
+    <span class="trustblock__label"><Icon name="shield-check" size={13} /> Made &amp; maintained by</span>
+    the {SITE_NAME} team - a fan project for competitive trainers. Formulas cross-checked against
+    <a href="https://bulbapedia.bulbagarden.net/wiki/Statistic" rel="noopener">Bulbapedia</a>, base stats from
+    <a href="https://pokeapi.co" rel="noopener">PokéAPI</a>.
+  </div>
+  <div>
+    <span class="trustblock__label"><Icon name="clock" size={13} /> Last updated</span>
+    <time datetime={LAST_UPDATED}>{LAST_UPDATED}</time>
+    · <a href="/changelog/">Changelog</a>
+    · <a href="/about/#method">Methodology</a>
+    · <a href={`mailto:${CONTACT_EMAIL}?subject=IVXray%20feedback`}>Report a problem</a>
+  </div>
+  <div>
+    <span class="trustblock__label"><Icon name="lock" size={13} /> Privacy</span>
+    Everything runs in your browser - nothing you enter is uploaded or stored.
+    <a href="/privacy/">Privacy policy</a>
+  </div>
+</div>

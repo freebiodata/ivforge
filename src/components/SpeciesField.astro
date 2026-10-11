@@ -1,0 +1,22 @@
+---
+import Icon from './Icon.astro';
+interface Props {
+  /** unique id used by the client-side picker to find its elements */
+  id: string;
+  label?: string;
+}
+const { id, label = 'Species' } = Astro.props;
+const inputId = `sp-input-${id}`;
+---
+<div class="field">
+  <label for={inputId}>{label}</label>
+  <div id={id}>
+    <div class="sp-selected" hidden></div>
+    <div class="sp-box">
+      <span class="sp-search-ico"><Icon name="search" size={15} /></span>
+      <input id={inputId} class="input sp-input" type="text" placeholder="Search species - e.g. Garchomp or #445" autocomplete="off" role="combobox" aria-expanded="false" />
+      <div class="sp-results" role="listbox" hidden></div>
+    </div>
+    <div class="sp-status sub" hidden></div>
+  </div>
+</div>

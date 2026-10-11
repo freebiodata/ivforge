@@ -1,0 +1,11 @@
+---
+import { icon, type IconName } from '../lib/icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+const { name, size = 14, class: cls } = Astro.props;
+---
+<span set:html={icon(name, size, cls)} />

@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro';
+interface Item {
+  q: string;
+  a: string; // may contain inline HTML
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+<div class="faq">
+  {items.map((item) => (
+    <details>
+      <summary>
+        <span class="faq-q">
+          <Icon name="circle-help" size={15} />
+          <span>{item.q}</span>
+        </span>
+      </summary>
+      <div set:html={item.a} />
+    </details>
+  ))}
+</div>

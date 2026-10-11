@@ -1,0 +1,171 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolHead from '../components/ToolHead.astro';
+import Faq from '../components/Faq.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { STAT_KEYS, STAT_LABELS } from '../lib/core/types';
+import { breadcrumbList, webApplication } from '../lib/seo';
+
+const title = 'Hidden Power Calculator - Type from IVs (Gen 3–7) | IVXray';
+const description =
+  'Work out Hidden Power\'s type and power from your Pokémon\'s IVs, see the parity math behind it, and get breeding-ready 31/30 spreads for any target type. Gen 3–7.';
+
+const faq = [
+  {
+    q: 'Why does Hidden Power type depend on odd/even IVs?',
+    a: 'From Gen 3 onward, the type is computed from the lowest bit of each IV - that is, whether each IV is odd or even. The six parities form a 6-bit number weighted HP·1, Attack·2, Defense·4, Speed·8, Sp. Atk·16, Sp. Def·32, mapped onto the 16 possible types. That\'s why breeders chase specific 31/30 patterns.',
+  },
+  {
+    q: 'Can Hidden Power be Normal or Fairy?',
+    a: 'No. The formula can produce exactly 16 types - every type except Normal. Fairy isn\'t in the Hidden Power pool either (the move pre-dates the Fairy type and keeps its old type table even in Gen 6–7).',
+  },
+  {
+    q: 'What is base power in each generation?',
+    a: 'Gen 3–5: power is computed from the second bit of each IV, ranging 30–70 - 70 is what breeders want. Gen 6–7: power is fixed at 60 for every Hidden Power; only the type varies. The move was removed entirely in Gen 8 (Sword/Shield) and doesn\'t exist in Gen 9.',
+  },
+  {
+    q: 'Which IV spread gives the Hidden Power I want?',
+    a: 'Use the breeding-targets card: pick a type and the calculator returns the spreads that keep the most 31s (only 30s where a bit must be even) while still hitting power 70 in Gen 3–5. Six perfect 31s is always Hidden Power Dark.',
+  },
+  {
+    q: 'Does Hyper Training change Hidden Power?',
+    a: 'No - Hyper Training never changes IVs themselves, so Hidden Power stays exactly the same. Only breeding for the right natural IV pattern moves the type.',
+  },
+];
+
+const jsonLd = [
+  webApplication({
+    name: 'IVXray - Hidden Power Calculator',
+    path: '/hidden-power/',
+    description,
+  }),
+  breadcrumbList([{ name: 'Hidden Power' }]),
+];
+---
+<BaseLayout title={title} description={description} path="/hidden-power/" jsonLd={jsonLd}>
+  <ToolHead
+    no="Tool 04 · Type solver"
+    icon="sparkles"
+    title="Hidden Power Calculator"
+    lede="Enter six IVs to solve Hidden Power's type (and power in Gen 3–5), see the parity math laid bare - then reverse the problem and get breeding-ready 31/30 spreads for any target type."
+    crumbs={[{ name: 'Hidden Power' }]}
+    trust="Free · No sign-up · Nothing you enter leaves your browser"
+  />
+
+  <section class="container section" style="margin-top: 24px" id="hptool">
+    <div class="tool-grid">
+      <!-- ============ INPUTS ============ -->
+      <div class="card card--pad">
+        <div class="card-title">
+          <h3>Specimen IVs</h3>
+          <span class="hint">each 0–31</span>
+        </div>
+
+        <div class="chips" style="margin-bottom:14px">
+          <button type="button" class="chip chip--on hp-gen-chip" data-gen="6-7">Gen 6–7 · power fixed 60</button>
+          <button type="button" class="chip hp-gen-chip" data-gen="3-5">Gen 3–5 · power varies 30–70</button>
+        </div>
+
+        <div class="field-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))">
+          {STAT_KEYS.map((k) => (
+            <div class="field" style="margin:0">
+              <label for={`hp-${k}`}>{STAT_LABELS[k]}</label>
+              <input id={`hp-${k}`} class="input input--num" type="number" min="0" max="31" value="31" inputmode="numeric" />
+            </div>
+          ))}
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap">
+          <button type="button" class="btn btn--ghost btn--sm" id="hp-max"><Icon name="zap" size={13} /> All 31s → Dark</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="hp-random"><Icon name="shuffle" size={13} /> Random</button>
+          <button type="button" class="btn btn--blue btn--sm" id="hp-copy"><Icon name="copy" size={13} /> Copy result</button>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="card-title">
+          <h3>Breeding targets</h3>
+          <span class="hint">reverse lookup</span>
+        </div>
+        <div class="field">
+          <label for="hp-target">I want Hidden Power…</label>
+          <select id="hp-target" class="select"></select>
+        </div>
+        <div id="hp-spreads"></div>
+      </div>
+
+      <!-- ============ READOUT ============ -->
+      <aside class="tool-side">
+        <div class="readout" id="hp-readout" aria-live="polite">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="readout-head">
+            <p class="readout-title">HIDDEN POWER <b>// SOLVE</b></p>
+            <span class="type-badge" id="hp-typebadge" style="background:#8a8f9e">-</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:22px; margin:6px 0 16px">
+            <div>
+              <div class="readout-title" style="margin-bottom:4px">TYPE</div>
+              <div class="big-value" id="hp-type">-</div>
+            </div>
+            <div>
+              <div class="readout-title" style="margin-bottom:4px">POWER</div>
+              <div class="big-value" id="hp-power">-</div>
+            </div>
+          </div>
+          <div class="stat-rows" id="hp-bits"></div>
+          <div class="readout-foot"><span id="hp-powerlabel">base power</span><span>16 types possible · never Normal or Fairy</span></div>
+        </div>
+        <div class="note note--warn" style="margin-top:14px">
+          Hidden Power does not exist from <b>Gen 8 (Sword/Shield)</b> onward - this tool covers
+          Gen 3–7 only.
+        </div>
+        <div class="nextsteps">
+          <span>Next step</span>
+          <a class="chip chip--on" href="/iv-calculator/">Check these IVs first <Icon name="arrow-right" size={12} /></a>
+          <a class="chip" href="/iv-judge/">Decode judge phrases <Icon name="arrow-right" size={12} /></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ MATH ============ -->
+  <section class="container section container--narrow" aria-labelledby="math-h">
+    <p class="eyebrow eyebrow--blue">Reference</p>
+    <h2 id="math-h">How the game computes it</h2>
+    <pre class="formula">type  = HP_TYPES[ floor((a + 2b + 4c + 8d + 16e + 32f) · 15 / 63) ]
+a…f = lowest bit of HP, Atk, Def, Speed, Sp. Atk, Sp. Def IVs
+
+power (Gen 3–5) = floor((u + 2v + 4w + 8x + 16y + 32z) · 40 / 63) + 30
+u…z = second-lowest bit of the same IVs · Gen 6–7: always 60
+
+HP_TYPES = Fighting · Flying · Poison · Ground · Rock · Bug · Ghost · Steel ·
+           Fire · Water · Grass · Electric · Psychic · Ice · Dragon · Dark</pre>
+    <p>
+      Worked example: IVs of HP 25, Attack 2, Defense 12, Speed 17, Sp. Atk 5, Sp. Def 8 give
+      parities 1,0,0,1,1,0 → weighted sum 25 → floor(25 × 15/63) = 5 → <b>Bug</b>, and the
+      second bits give power <b>31</b>. Six 31s is the famous <b>Hidden Power Dark 70</b>.
+      <b>Limitation:</b> the move doesn't exist from Gen 8 onward, and these formulas don't apply
+      to Gen 2 (which used DVs and a different table). Source:
+      <a href="https://bulbapedia.bulbagarden.net/wiki/Hidden_Power_(move)/Calculation" rel="noopener">Bulbapedia - Hidden Power calculation</a>, verified 2026-10-11.
+    </p>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="container section container--narrow" aria-labelledby="faq-h">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-h">Hidden Power FAQ</h2>
+    <Faq items={faq} />
+    <TrustBlock />
+    <div class="inline-list" style="margin-top:20px">
+      <a href="/iv-calculator/">IV Calculator <Icon name="arrow-right" size={12} /></a>
+      <a href="/iv-judge/">IV Judge Interpreter <Icon name="arrow-right" size={12} /></a>
+      <a href="/pokedex/">Base-stat Pokédex <Icon name="arrow-right" size={12} /></a>
+    </div>
+  </section>
+
+  <script>
+    import { initHiddenPowerTool } from '../lib/client/hidden-power-tool';
+    initHiddenPowerTool(document.getElementById('hptool')!);
+  </script>
+</BaseLayout>

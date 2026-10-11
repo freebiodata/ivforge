@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Logo from '../components/Logo.astro';
+import Icon from '../components/Icon.astro';
+
+const title = 'Page not found (404) | IVXray';
+const description = 'That page is outside the scan range. Jump back to the Pokémon IV and stat tools.';
+---
+<BaseLayout title={title} description={description} path="/404/" noindex>
+  <div class="container" style="text-align:center; padding-top:70px; padding-bottom:70px">
+    <div style="display:flex; justify-content:center; margin-bottom:18px">
+      <Logo size={64} />
+    </div>
+    <p class="eyebrow" style="justify-content:center"><Icon name="scan-line" size={15} /> Error 404 · outside scan range</p>
+    <h1 style="font-size:clamp(26px,4vw,38px)">No specimen detected here.</h1>
+    <p class="lede" style="margin:0 auto 26px; max-width:46ch">
+      The page you asked for doesn't exist - but the lab is one tap away.
+    </p>
+    <div class="inline-list" style="justify-content:center">
+      <a href="/">Home</a>
+      <a href="/iv-calculator/">IV Calculator</a>
+      <a href="/stat-calculator/">Stat Calculator</a>
+      <a href="/iv-judge/">IV Judge</a>
+      <a href="/hidden-power/">Hidden Power</a>
+      <a href="/pokedex/">Pokédex</a>
+      <a href="/sitemap/">Sitemap</a>
+    </div>
+  </div>
+</BaseLayout>

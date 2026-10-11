@@ -1,0 +1,144 @@
+---
+import Icon from '../components/Icon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolHead from '../components/ToolHead.astro';
+import Faq from '../components/Faq.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import { JUDGE_TOTAL_POTENTIAL, rangeLabel } from '../lib/core/judge';
+import { breadcrumbList, webApplication } from '../lib/seo';
+
+const title = 'Pokémon IV Judge Phrases to IV Ranges (Gen 3–9) | IVXray';
+const description =
+  'What “Best”, “Fantastic” and “Very Good” mean: translate every Pokémon IV judge phrase into exact IV ranges - Gen 7+ judge function, Gen 6 NPCs, back to Emerald. Plus the characteristic lookup.';
+
+const faq = [
+  {
+    q: 'What does "Best" mean on the judge?',
+    a: 'In Gen 7+ games (Sun/Moon through Scarlet/Violet), "Best" means the IV is exactly 31 - perfect. "Fantastic" is exactly 30. The full ladder: No Good 0 · Decent 1–15 · Pretty Good 16–25 · Very Good 26–29 · Fantastic 30 · Best 31.',
+  },
+  {
+    q: 'How do I unlock the judge function?',
+    a: 'Gen 7: hatch 20 eggs or reach the Battle Tree. Sword/Shield: reach rank 4 in the Battle Tower. Brilliant Diamond/Shining Pearl: win once at the Battle Tower, then talk to the judge. Scarlet/Violet: already unlocked - open a box, select a Pokémon and press + to toggle judge view.',
+  },
+  {
+    q: 'What did judges say before Gen 7?',
+    a: 'Gen 3–6 judges are NPCs (Emerald\'s Battle Frontier, the Ace Trainer in Gen 6 Pokémon Centers) who comment only on the highest IV and the IV sum - "outstanding overall potential" means the six IVs total 151–186. Switch tabs above to decode those exact phrases.',
+  },
+  {
+    q: 'Does Hyper Training change what the judge says?',
+    a: 'A hyper-trained stat is marked "hyper trained!" but the judge still reports the original IV underneath - a bottle-capped stat does not become "Best" unless it already was 31. Hyper Training never changes breeding or Hidden Power either.',
+  },
+  {
+    q: 'What are "No Good" and 0 IVs good for?',
+    a: 'Deliberately! A 0-IV Attack stat minimizes confusion damage and Foul Play damage against you, and a 0-IV Speed enables slow Trick Room builds. "No Good" is a feature for those sets.',
+  },
+];
+
+const jsonLd = [
+  webApplication({
+    name: 'IVXray - Pokémon IV Judge Interpreter',
+    path: '/iv-judge/',
+    description,
+  }),
+  breadcrumbList([{ name: 'IV Judge' }]),
+];
+---
+<BaseLayout title={title} description={description} path="/iv-judge/" jsonLd={jsonLd}>
+  <ToolHead
+    no="Tool 03 · Phrase decoder"
+    icon="badge-check"
+    title="Pokémon IV Judge Interpreter"
+    lede="Every judge phrase, decoded into hard IV ranges - the Gen 7+ judge function (Best, Fantastic, Very Good…), the Gen 6 NPC judge, and the classics back to Emerald. Includes the characteristic lookup."
+    crumbs={[{ name: 'IV Judge' }]}
+    trust="Free · No sign-up · Nothing you enter leaves your browser"
+  />
+
+  <section class="container section" style="margin-top: 24px" id="judgetool">
+    <div class="tool-grid">
+      <div class="card card--pad">
+        <div class="tabs" id="judge-tabs" role="tablist"></div>
+        <div id="judge-modepanel"></div>
+
+        <hr class="divider" />
+
+        <div class="card-title">
+          <h3>Characteristic lookup</h3>
+          <span class="hint">the flavor text on the status page</span>
+        </div>
+        <div class="field">
+          <label for="char-lookup">“Nods off a lot”, “Likes to run”…</label>
+          <select id="char-lookup" class="select"></select>
+        </div>
+        <div id="char-out" class="card" style="padding:14px 16px; background:var(--surface-2); border-style:dashed"></div>
+      </div>
+
+      <aside class="tool-side">
+        <div class="readout" id="judge-readout" aria-live="polite">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="readout-head">
+            <p class="readout-title">DECODER <b>// PHRASE → IV</b></p>
+            <span class="status-chip"><Icon name="badge-check" size={12} /> ranges</span>
+          </div>
+          <div class="stat-rows" id="judge-rows"></div>
+          <div class="readout-foot" id="judge-foot"></div>
+        </div>
+        <div class="note" style="margin-top:14px">
+          <b>Tip:</b> judge phrases are ranges, not values. To pin exact IVs, feed the phrases as
+          tiers into the <a href="/iv-calculator/">IV Calculator</a> together with the summary-screen stats.
+        </div>
+        <div class="nextsteps">
+          <span>Next step</span>
+          <a class="chip chip--on" href="/iv-calculator/">Run the full IV scan <Icon name="arrow-right" size={12} /></a>
+          <a class="chip" href="/hidden-power/">Hidden Power from IVs <Icon name="arrow-right" size={12} /></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ REFERENCE TABLE ============ -->
+  <section class="container section" aria-labelledby="ref-h">
+    <p class="eyebrow eyebrow--blue">Reference card</p>
+    <h2 id="ref-h">The Gen 7+ judge ladder</h2>
+    <div class="table-wrap" style="max-width:680px">
+      <table class="data">
+        <thead>
+          <tr><th>Judge phrase</th><th class="num">IV range</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">No Good</td><td class="num">0</td><td>Lowest possible - wanted for Attack on special attackers / Trick Room Speed</td></tr>
+          <tr><td class="mono">Decent</td><td class="num">1–15</td><td>Below average</td></tr>
+          <tr><td class="mono">Pretty Good</td><td class="num">16–25</td><td>Middle of the pack</td></tr>
+          <tr><td class="mono">Very Good</td><td class="num">26–29</td><td>Competitive-ready</td></tr>
+          <tr><td class="mono">Fantastic</td><td class="num">30</td><td>One point from perfect</td></tr>
+          <tr><td class="mono">Best</td><td class="num">31</td><td>Perfect - the breeder's target</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px; max-width:72ch; color:var(--ink-2)">
+      In Gen 3–6 the judge also graded the <b>sum</b> of all six IVs:
+      {JUDGE_TOTAL_POTENTIAL.map((t) => `${t.label.replace(/ \(.*\)/, '')} ${rangeLabel(t)}`).join(' · ')}.
+      Those games only commented on the single highest IV, which is why the old tabs ask for one phrase instead of six.
+      Sources: <a href="https://bulbapedia.bulbagarden.net/wiki/Stats_judge" rel="noopener">Bulbapedia - Stats judge</a>
+      and <a href="https://bulbapedia.bulbagarden.net/wiki/Characteristic" rel="noopener">Characteristic</a>, verified 2026-10-11.
+    </p>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="container section container--narrow" aria-labelledby="faq-h">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-h">IV Judge FAQ</h2>
+    <Faq items={faq} />
+    <TrustBlock />
+    <div class="inline-list" style="margin-top:20px">
+      <a href="/iv-calculator/">IV Calculator <Icon name="arrow-right" size={12} /></a>
+      <a href="/hidden-power/">Hidden Power <Icon name="arrow-right" size={12} /></a>
+      <a href="/about/#faq">All FAQs <Icon name="arrow-right" size={12} /></a>
+    </div>
+  </section>
+
+  <script>
+    import { initJudgeTool, initCharacteristicCard } from '../lib/client/judge-tool';
+    initJudgeTool(document.getElementById('judgetool')!);
+    initCharacteristicCard(document.getElementById('judgetool')!);
+  </script>
+</BaseLayout>

@@ -1,0 +1,229 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolHead from '../components/ToolHead.astro';
+import SpeciesField from '../components/SpeciesField.astro';
+import Faq from '../components/Faq.astro';
+import TrustBlock from '../components/TrustBlock.astro';
+import Icon from '../components/Icon.astro';
+import { STAT_KEYS, STAT_LABELS, STAT_SHORT } from '../lib/core/types';
+import { breadcrumbList, webApplication } from '../lib/seo';
+
+const title = 'Pokémon IV Calculator - Check Exact IVs, Gen 3–9 | IVXray';
+const description =
+  'Enter species, level, nature and summary-screen stats to check exact Pokémon IVs or candidate ranges - with judge tiers, characteristic hints and 1,025 species built in.';
+
+const faq = [
+  {
+    q: 'What level gives exact IVs?',
+    a: 'Level 100 with 0 EVs always pins every IV exactly. Level 50 (the standard battle/raid level) is exact or off by at most one point; below level 20 rounding starts hiding several IVs per stat, which is why the calculator shows ranges.',
+  },
+  {
+    q: 'A stat says "no match" - what went wrong?',
+    a: 'Almost always one of: the level is wrong, the nature in the calculator isn\'t the Pokémon\'s actual nature, the Pokémon has EVs you didn\'t enter (enable "This Pokémon has EV training"), or a typo. The possible range printed under each field tells you what the stat could legally be.',
+  },
+  {
+    q: 'Do EVs affect IV checking?',
+    a: 'Yes - EVs add to the stat before IVs can be solved, so an EV-trained stat will solve to the wrong IV if you leave EVs at 0. Freshly caught, hatched or raid-caught Pokémon have 0 EVs; anything that has battled or been fed vitamins has some. Track them or use EV-reset berries.',
+  },
+  {
+    q: 'Which nature should I select?',
+    a: 'The nature printed on your Pokémon\'s status page - not the nature you wish it had. A ±10% nature shifts two stats, so picking the wrong one mis-solves those stats.',
+  },
+  {
+    q: 'Does Hyper Training affect the scan?',
+    a: 'No. Hyper Training boosts the effective stat for battle, but the true IV underneath is unchanged - so a hyper-trained stat reads as 31 in battle while its real IV is different. Treat hyper-trained stats as unreadable here.',
+  },
+  {
+    q: 'Why does Shedinja say HP "n/a"?',
+    a: 'Shedinja\'s HP is hard-coded to 1 in the games regardless of IVs, so its HP stat carries zero IV information. The other five stats still solve normally.',
+  },
+];
+
+const jsonLd = [
+  webApplication({
+    name: 'IVXray - Pokémon IV Calculator',
+    path: '/iv-calculator/',
+    description,
+  }),
+  breadcrumbList([{ name: 'IV Calculator' }]),
+];
+---
+<BaseLayout title={title} description={description} path="/iv-calculator/" jsonLd={jsonLd}>
+  <ToolHead
+    no="Tool 01 · IV Checker"
+    title="Pokémon IV Calculator"
+    icon="scan-line"
+    lede="Type in what the summary screen shows - the scanner runs every IV 0–31 through the exact Gen 3–9 stat formula and reports which values fit. Blank fields stay open; judge tiers and the characteristic finish the job."
+    crumbs={[{ name: 'IV Calculator' }]}
+    trust="Free · No sign-up · Nothing you enter leaves your browser"
+  />
+
+  <section class="container section" style="margin-top: 24px" id="ivcalc">
+    <div class="tool-grid">
+      <!-- ============ INPUTS ============ -->
+      <div class="card card--pad">
+        <div class="card-title">
+          <h3>Specimen data</h3>
+          <span class="hint">everything runs locally</span>
+        </div>
+
+        <SpeciesField id="iv-species" />
+
+        <div class="field-grid" style="grid-template-columns: 1fr 1.4fr; align-items: start">
+          <div class="field" style="margin:0">
+            <label for="iv-level">Level</label>
+            <input id="iv-level" class="input input--num" type="number" min="1" max="100" value="50" inputmode="numeric" />
+            <div class="chips" style="margin-top:8px">
+              <button type="button" class="chip iv-lvl-chip" data-level="1">Lv 1</button>
+              <button type="button" class="chip iv-lvl-chip" data-level="5">Lv 5</button>
+              <button type="button" class="chip iv-lvl-chip" data-level="50">Lv 50</button>
+              <button type="button" class="chip iv-lvl-chip" data-level="100">Lv 100</button>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label for="iv-nature">Nature <span style="font-weight:400">(from the status page)</span></label>
+            <select id="iv-nature" class="select"></select>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="field-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
+          {STAT_KEYS.map((k) => (
+            <div class="field stat-cell" style="margin:0">
+              <label for={`iv-stat-${k}`} style="margin:0">{STAT_LABELS[k]}</label>
+              <input id={`iv-stat-${k}`} class="input input--num" type="number" min="1" inputmode="numeric" placeholder={k === 'hp' ? 'e.g. 183' : 'stat - '} />
+              <select id={`iv-judge-${k}`} aria-label={`${STAT_LABELS[k]} judge phrase`} class="select select--judge"></select>
+              <div class="sub" id={`iv-hint-${k}`} style="margin-top:0"></div>
+            </div>
+          ))}
+        </div>
+
+        <hr class="divider" />
+
+        <div class="field">
+          <label for="iv-char">Characteristic <span style="font-weight:400">(optional - the flavor text on the status page)</span></label>
+          <select id="iv-char" class="select"></select>
+          <div class="sub" style="margin-top:6px; font-family:var(--sans); color:var(--ink-3)">
+            Pins which stat is highest and its IV's last digit (mod 5). In Gen 4–5 English games the HP phrases were mistranslated - this tool uses the corrected mapping.
+          </div>
+        </div>
+
+        <label class="checkline" style="margin: 14px 0 10px">
+          <input type="checkbox" id="iv-showev" />
+          This Pokémon has EV training - I know (or can estimate) its EVs
+        </label>
+        <div id="iv-evwrap" class="field-grid" style="grid-template-columns: repeat(auto-fit, minmax(96px, 1fr))" hidden>
+          {STAT_KEYS.map((k) => (
+            <div class="field" style="margin:0">
+              <label for={`iv-ev-${k}`} style="font-family:var(--mono); font-size:10px">{STAT_SHORT[k]} EV</label>
+              <input id={`iv-ev-${k}`} class="input input--num" type="number" min="0" max="252" step="4" value="0" inputmode="numeric" />
+            </div>
+          ))}
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap">
+          <button type="button" class="btn btn--primary btn--sm" id="iv-example"><Icon name="play" size={13} /> Load example</button>
+          <button type="button" class="btn btn--ghost btn--sm" id="iv-reset"><Icon name="rotate-ccw" size={13} /> Reset scan</button>
+          <button type="button" class="btn btn--blue btn--sm" id="iv-copy"><Icon name="copy" size={13} /> Copy results</button>
+        </div>
+      </div>
+
+      <!-- ============ READOUT ============ -->
+      <aside class="tool-side">
+        <div class="readout" id="iv-readout" aria-live="polite">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="readout-head">
+            <p class="readout-title">IV SCAN <b>// GEN 3–9 FORMULA</b></p>
+            <span class="status-chip status-chip--wait" id="iv-status"><Icon name="scan-line" size={12} /> standby</span>
+          </div>
+          <div class="stat-rows" id="iv-rows"></div>
+          <div class="readout-foot" id="iv-foot"></div>
+        </div>
+        <div class="note" style="margin-top:14px">
+          <b>Reading the scan:</b> green = exact IV · blue = candidate range on the 0–31 ruler ·
+          red = no IV can produce that stat. ◆ marks the characteristic stat.
+        </div>
+        <div class="nextsteps">
+          <span>Next step</span>
+          <a class="chip chip--on" href="/stat-calculator/">Project its stats <Icon name="arrow-right" size={12} /></a>
+          <a class="chip" href="/iv-judge/">Decode judge phrases <Icon name="arrow-right" size={12} /></a>
+          <a class="chip" href="/hidden-power/">Check Hidden Power <Icon name="arrow-right" size={12} /></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ HOW TO ============ -->
+  <section class="container section container--narrow" aria-labelledby="how-to">
+    <p class="eyebrow eyebrow--blue">Field manual</p>
+    <h2 id="how-to">How to check IVs in game</h2>
+    <div class="steps">
+      <div class="card step"><h3>Find the numbers</h3><p>The summary/status screen shows level and six stats. The nature is on the status page ("Adamant", "Serious"…). The characteristic is the flavor line like "Likes to run."</p></div>
+      <div class="card step"><h3>Mind the EVs</h3><p>Freshly caught, hatched and raid Pokémon have 0 EVs - leave the box unchecked. Battled or vitamin-fed Pokémon have EVs; enter them or the solve skews.</p></div>
+      <div class="card step"><h3>Scan, then narrow</h3><p>Low level = wide ranges. Re-check the same Pokémon after leveling (rare candies preserve EVs), or add judge phrases from the box-marking PC judge.</p></div>
+    </div>
+
+    <h3 style="margin-top:28px">Worked examples</h3>
+    <div class="table-wrap" style="max-width:720px">
+      <table class="data">
+        <thead><tr><th>Case</th><th>Inputs</th><th>Scan result</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Exact at Lv 50</td>
+            <td class="mono">Garchomp · Lv 50 · Serious · 0 EV<br />stats 183 / 150 / 115 / 100 / 105 / 122</td>
+            <td>All six IVs <b>31</b> - exact match</td>
+          </tr>
+          <tr>
+            <td>Ambiguity at Lv 10</td>
+            <td class="mono">Base-50 HP stat · Lv 10 · 0 EV · HP 30</td>
+            <td>IV <b>0–9</b> (all ten produce stat 30)</td>
+          </tr>
+          <tr>
+            <td>Judge tier only</td>
+            <td class="mono">Attack judge: “Very Good”</td>
+            <td>IV <b>26–29</b> with no stats entered</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="example-note">Try the first one instantly with “Load example” above the scanner.</p>
+
+    <h3 style="margin-top:28px">How the solve works</h3>
+    <p>Every stat in Gen 3–9 is computed as:</p>
+    <pre class="formula">HP    = floor((2·Base + IV + floor(EV/4)) · Level/100) + Level + 10
+Other = floor((floor((2·Base + IV + floor(EV/4)) · Level/100) + 5) · N)
+N = 1.1 if the nature boosts the stat, 0.9 if it hinders, else 1</pre>
+    <p>
+      To solve, IVXray substitutes each IV 0–31 into the formula and keeps every value that
+      reproduces your observed stat - which is why rounding at low levels yields ranges.
+      The characteristic applies two hard constraints: its stat's IV ends in a known digit
+      (mod 5) and is tied for the highest IV across all six stats.
+      <b>Limitations:</b> Gen 1–2 (DVs) are out of scope; hyper-trained stats read wrong because
+      the games boost their effective value without changing the IV; Shedinja's HP is always 1.
+      Sources: stat formula and characteristic mechanics - 
+      <a href="https://bulbapedia.bulbagarden.net/wiki/Statistic" rel="noopener">Bulbapedia</a>
+      (verified 2026-10-11) · base stats - 
+      <a href="https://pokeapi.co" rel="noopener">PokéAPI</a> snapshot 2026-10-11.
+    </p>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="container section container--narrow" aria-labelledby="faq-h">
+    <p class="eyebrow">Questions</p>
+    <h2 id="faq-h">IV Calculator FAQ</h2>
+    <Faq items={faq} />
+    <TrustBlock />
+    <div class="inline-list" style="margin-top:20px">
+      <a href="/stat-calculator/">Stat Calculator <Icon name="arrow-right" size={12} /></a>
+      <a href="/iv-judge/">IV Judge Interpreter <Icon name="arrow-right" size={12} /></a>
+      <a href="/hidden-power/">Hidden Power <Icon name="arrow-right" size={12} /></a>
+      <a href="/pokedex/">Base-stat Pokédex <Icon name="arrow-right" size={12} /></a>
+    </div>
+  </section>
+
+  <script>
+    import { initIVCalculator } from '../lib/client/iv-calculator';
+    initIVCalculator(document.getElementById('ivcalc')!);
+  </script>
+</BaseLayout>

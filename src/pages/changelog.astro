@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import dex from '../data/pokedex.json';
+import { breadcrumbList } from '../lib/seo';
+
+const title = 'Changelog | IVXray';
+const description = 'What changed and when on IVXray - tool launches, data snapshot updates and formula fixes, newest first.';
+
+const jsonLd = [breadcrumbList([{ name: 'Changelog' }])];
+---
+<BaseLayout title={title} description={description} path="/changelog/" jsonLd={jsonLd}>
+  <div class="container container--narrow">
+    <Breadcrumbs items={[{ name: 'Changelog' }]} />
+    <h1>Changelog</h1>
+    <p class="lede">Real, dated updates - never cosmetic date bumps.</p>
+
+    <section class="section" style="margin-top:28px">
+      <h2 class="mono" style="font-size:16px">2026-10-11 - v1.0.0 · Launch</h2>
+      <ul>
+        <li>Launch with four tools: <a href="/iv-calculator/">IV Calculator</a> (exact IVs &amp; ranges, judge tiers, characteristic constraints, EV-aware solving, Shedinja handling), <a href="/stat-calculator/">Stat Calculator</a> (final stats + level-100 projection, EV budget gauge), <a href="/iv-judge/">IV Judge Interpreter</a> (Gen 3–9 phrase tables + characteristic lookup), <a href="/hidden-power/">Hidden Power Calculator</a> (type &amp; power from IVs, reverse breeding-target lookup).</li>
+        <li>Base-stat <a href="/pokedex/">Pokédex browser</a> - all 1,025 base-form species, searchable and sortable.</li>
+        <li>Pokédex data baked from PokéAPI (snapshot 2026-10-11) via <code>scripts/fetch-pokedex.mjs</code>.</li>
+        <li>Math library unit-tested (59 assertions) against documented worked examples.</li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
